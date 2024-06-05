@@ -1,0 +1,42 @@
+version: "3.9"
+
+services:
+  flask_app:
+    container_name: flask_app
+    build: .
+    ports:
+      - "4000:4000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:mysecretpassword@flask_db:5432/postgres
+    depends_on:
+      - flask_db
+      - mysql_db
+    networks:
+      - mynetwork
+
+  flask_db:
+    container_name: flask_db
+    image: postgres:13
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_PASSWORD=mysecretpassword
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=postgres
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - mynetwork
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+networks:
+  mynetwork:
+    driver: bridge
+
+volumes:
+  pgdata:
+  mysql_data:
